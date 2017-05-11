@@ -221,7 +221,18 @@ public class SteamFriends extends SteamInterface {
 	public void activateGameOverlayInviteDialog(SteamID steamIDLobby) {
 		activateGameOverlayInviteDialog(pointer, steamIDLobby.handle);
 	}
-
+	
+	/**
+	 * Rich Presence data is automatically shared between friends who are in the same game. Each user has a set of Key/Value pairs
+	 * <br>Note the following limits: k_cchMaxRichPresenceKeys, k_cchMaxRichPresenceKeyLength, k_cchMaxRichPresenceValueLength
+	 * <br>There are two magic keys:
+	 * <BLOCKQUOTE>
+	 * "status"  - a UTF-8 string that will show up in the 'view game info' dialog in the Steam friends list
+	 * <br>"connect" - a UTF-8 string that contains the command-line for how a friend can connect to a game
+	 * </BLOCKQUOTE>
+	 * GetFriendRichPresence() returns an empty string "" if no value is set. SetRichPresence() to a NULL or an empty string deletes the key
+	 * <br>You can iterate the current set of keys for a friend with GetFriendRichPresenceKeyCount() and GetFriendRichPresenceKeyByIndex() (typically only used for debugging)
+	 */
 	public boolean setRichPresence(String key, String value) {
 		return setRichPresence(pointer, key, value != null ? value : "");
 	}

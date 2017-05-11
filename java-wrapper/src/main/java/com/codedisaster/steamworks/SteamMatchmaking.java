@@ -214,6 +214,14 @@ public class SteamMatchmaking extends SteamInterface {
 	 * Removes the game server from the local storage
 	 * @return true if one was removed
 	 */
+	public boolean removeFavoriteGame(FavoriteGameEntry favoriteGameEntry) {
+		return removeFavoriteGame(favoriteGameEntry.getAppID(), favoriteGameEntry.getIP(), favoriteGameEntry.getConnPort(), favoriteGameEntry.getQueryPort(), favoriteGameEntry.getFlags());
+	}
+	
+	/**
+	 * Removes the game server from the local storage
+	 * @return true if one was removed
+	 */
 	public boolean removeFavoriteGame(int appID, int ip, short connPort, short queryPort, int flags) {
 		return removeFavoriteGame(pointer, appID, ip, connPort, queryPort, flags);
 	}

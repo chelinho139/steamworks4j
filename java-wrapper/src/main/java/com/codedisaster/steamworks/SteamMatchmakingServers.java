@@ -303,12 +303,12 @@ public class SteamMatchmakingServers extends SteamInterface
 		/**
 		 * Server has responded successfully and has updated data
 		 */
-		public void ServerResponded(GameServerItem server);
+		public void onServerResponded(GameServerItem server);
 
 		/**
 		 * Server failed to respond to the ping request
 		 */
-		public void ServerFailedToRespond();
+		public void onServerFailedToRespond();
 	}
 
 	/**
@@ -489,9 +489,69 @@ public class SteamMatchmakingServers extends SteamInterface
 
 	private static native long pingServer(long pointer, int ip, short port, ISteamMatchmakingPingResponse requestServersResponse); /*
 	ISteamMatchmakingServers* matchmaking = (ISteamMatchmakingServers*) pointer;
-	ISteamMatchmakingPingResponse pRequestServersResponse;
-	HServerQuery query = matchmaking->PingServer(ip, port, &pRequestServersResponse);
-	return query;
-	*/
 
+	class Callback : public ISteamMatchmakingPingResponse {
+	private:
+		JNIEnv* env;
+		jobject callback;
+
+		void callVoidMethod(JNIEnv* env, jobject callback, const char* method, const char* signature, ...) const {
+			jclass clazz = env->GetObjectClass(callback);
+			jclass ex = env->FindClass("com/codedisaster/steamworks/SteamException");
+			if (clazz == 0) {
+				env->ThrowNew(ex, "Couldn't retrieve class for callback object.");
+			}
+			else {
+				jmethodID methodID = env->GetMethodID(clazz, method, signature);
+				if (methodID == 0) {
+					env->ThrowNew(ex, "Couldn't retrieve callback method.");
+				}
+				else {
+					va_list args;
+					va_start(args, signature);
+					env->CallVoidMethodV(callback, methodID, args);
+					va_end(args);
+
+					jthrowable ex = env->ExceptionOccurred();
+					if (ex != NULL) {
+						env->ExceptionDescribe();
+						env->ExceptionClear();
+						env->DeleteLocalRef(ex);
+					}
+				}
+				env->DeleteLocalRef(clazz);
+			}
+		}
+	public:
+
+		Callback(JNIEnv* env, jobject callback)
+		{
+			env = env;
+			callback = callback;
+		}
+
+		void ServerResponded(gameserveritem_t &server)
+		{
+			// test ob wenigstens eine exception ankommt
+			jclass ex = env->FindClass("com/codedisaster/steamworks/SteamException");
+			env->ThrowNew(ex, "Couldn't retrieve callback method.");
+
+			callVoidMethod(env, callback, "onServerFailedToRespond", "()V");
+		}
+
+		void ServerFailedToRespond()
+		{
+			// test ob wenigstens eine exception ankommt
+			jclass ex = env->FindClass("com/codedisaster/steamworks/SteamException");
+			env->ThrowNew(ex, "Couldn't retrieve callback method.");
+
+			callVoidMethod(env, callback, "onServerFailedToRespond", "()V");
+		}
+	};
+
+	Callback response(env, requestServersResponse);
+	HServerQuery query = matchmaking->PingServer(ip, port, &response);
+
+	return (int64) query;
+	*/
 }

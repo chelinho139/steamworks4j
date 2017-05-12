@@ -365,7 +365,7 @@ public class SteamMatchmakingServers extends SteamInterface
 
 	public SteamMatchmakingServers()
 	{
-		super(SteamAPI.getSteamMatchmakingPointer());
+		super(SteamAPI.getSteamMatchmakingServersPointer());
 	}
 
 	// Request a new list of servers of a particular type. These calls each correspond to one of the EMatchMakingType values.

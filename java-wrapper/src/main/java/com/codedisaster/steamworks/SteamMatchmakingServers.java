@@ -549,8 +549,8 @@ public class SteamMatchmakingServers extends SteamInterface
 		}
 	};
 
-	Callback response(env, requestServersResponse);
-	HServerQuery query = matchmaking->PingServer(ip, port, &response);
+	ISteamMatchmakingPingResponse* response = new Callback(env, requestServersResponse);
+	HServerQuery query = matchmaking->PingServer(ip, port, response);
 
 	return (int64) query;
 	*/

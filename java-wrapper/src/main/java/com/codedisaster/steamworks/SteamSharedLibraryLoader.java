@@ -18,7 +18,7 @@ class SteamSharedLibraryLoader {
 			"com.codedisaster.steamworks.SharedLibraryExtractDirectory", "steamworks4j");
 
 	private static final String SHARED_LIBRARY_EXTRACT_PATH = System.getProperty(
-			"com.codedisaster.steamworks.SharedLibraryExtractPath");
+			"com.codedisaster.steamworks.SharedLibraryExtractPath", null);
 
 	private static final String SDK_REDISTRIBUTABLE_BIN_PATH = System.getProperty(
 			"com.codedisaster.steamworks.SDKRedistributableBinPath", "sdk/redistributable_bin");
@@ -51,20 +51,12 @@ class SteamSharedLibraryLoader {
 			case Windows:
 				return libName + (IS_64_BIT ? "64" : "") + ".dll";
 			case Linux:
-				boolean append64 = IS_64_BIT && !isSdkLibName(libName);
-				return "lib" + libName + (append64 ? "64" : "") + ".so";
+				return "lib" + libName + ".so";
 			case MacOS:
 				return "lib" + libName + ".dylib";
 		}
 
 		throw new RuntimeException("Unknown host architecture");
-	}
-
-	/**
-	 * This hackery is required because on Linux, names for 32-bit and 64-bit shared libraries are the same.
-	 */
-	private static boolean isSdkLibName(String libName) {
-		return libName.equals("steam_api") || libName.equals("sdkencryptedappticket");
 	}
 
 	static String getSdkRedistributableBinPath() {
@@ -74,7 +66,7 @@ class SteamSharedLibraryLoader {
 				path = new File(SDK_REDISTRIBUTABLE_BIN_PATH, IS_64_BIT ? "win64" : "");
 				break;
 			case Linux:
-				path = new File(SDK_REDISTRIBUTABLE_BIN_PATH, IS_64_BIT ? "linux64" : "linux32");
+				path = new File(SDK_REDISTRIBUTABLE_BIN_PATH, "linux64");
 				break;
 			case MacOS:
 				path = new File(SDK_REDISTRIBUTABLE_BIN_PATH, "osx32");
@@ -93,7 +85,7 @@ class SteamSharedLibraryLoader {
 				path = new File(SDK_LIBRARY_PATH, IS_64_BIT ? "win64" : "win32");
 				break;
 			case Linux:
-				path = new File(SDK_LIBRARY_PATH, IS_64_BIT ? "linux64" : "linux32");
+				path = new File(SDK_LIBRARY_PATH, "linux64");
 				break;
 			case MacOS:
 				path = new File(SDK_LIBRARY_PATH, "osx32");
@@ -113,9 +105,19 @@ class SteamSharedLibraryLoader {
 					SHARED_LIBRARY_EXTRACT_DIRECTORY + "/" + Version.getVersion(), librarySystemName);
 
 			if (libraryPath == null) {
+				// extract library from resource
 				extractLibrary(librarySystemPath, librarySystemName);
 			} else {
-				extractLibrary(librarySystemPath, new File(libraryPath, librarySystemName));
+				// read library from given path
+				File librarySourcePath = new File(libraryPath, librarySystemName);
+
+				if (OS != PLATFORM.Windows) {
+					// on MacOS & Linux, "extract" (copy) from source location
+					extractLibrary(librarySystemPath, librarySourcePath);
+				} else {
+					// on Windows, load the library from the source location
+					librarySystemPath = librarySourcePath;
+				}
 			}
 
 			String absolutePath = librarySystemPath.getCanonicalPath();

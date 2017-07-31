@@ -1,6 +1,6 @@
 solution "steamworks4j"
 	configurations { "release" }
-	platforms { "x32", "x64" }
+	platforms { "x64" }
 
 	buildoptions {
 		"-std=c++11",
@@ -28,7 +28,6 @@ solution "steamworks4j"
 		language "C++"
 
 		files {
-			"../java-wrapper/src/main/native/**.h",
 			"../java-wrapper/src/main/native/**.cpp"
 		}
 
@@ -36,21 +35,12 @@ solution "steamworks4j"
 			"../java-wrapper/src/main/native",
 		}
 
-		configuration "x32"
-			libdirs {
-				"../sdk/redistributable_bin/linux32"
-			}
-			links {
-				"steam_api"
-			}
-
-		configuration "x64"
-			libdirs {
-				"../sdk/redistributable_bin/linux64"
-			}
-			links {
-				"steam_api"
-			}
+        libdirs {
+            "../sdk/redistributable_bin/linux64"
+        }
+        links {
+            "steam_api"
+        }
 
 	project "steamworks4j-server"
 
@@ -58,30 +48,40 @@ solution "steamworks4j"
 		language "C++"
 
 		files {
-			"../server/src/main/native/**.h",
 			"../server/src/main/native/**.cpp"
+		}
+
+		excludes {
+			"../server/src/main/native/**EncryptedAppTicket*.cpp"
 		}
 
 		includedirs {
 			"../server/src/main/native",
 		}
 
-		configuration "x32"
-			libdirs {
-				"../sdk/redistributable_bin/linux32",
-				"../sdk/public/steam/lib/linux32"
-			}
-			links {
-				"steam_api",
-				"sdkencryptedappticket"
-			}
+        libdirs {
+            "../sdk/redistributable_bin/linux64"
+        }
+        links {
+            "steam_api"
+        }
 
-		configuration "x64"
-			libdirs {
-				"../sdk/redistributable_bin/linux64",
-				"../sdk/public/steam/lib/linux64"
-			}
-			links {
-				"steam_api",
-				"sdkencryptedappticket"
-			}
+	project "steamworks4j-encryptedappticket"
+
+		kind "SharedLib"
+		language "C++"
+
+		files {
+			"../server/src/main/native/**EncryptedAppTicket*.cpp"
+		}
+
+		includedirs {
+			"../server/src/main/native",
+		}
+
+        libdirs {
+            "../sdk/public/steam/lib/linux64"
+        }
+        links {
+            "sdkencryptedappticket"
+        }
